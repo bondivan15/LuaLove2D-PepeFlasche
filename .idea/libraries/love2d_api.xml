@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="love2d-api" type="Lua">
-    <CLASSES>
-      <root url="file://$PROJECT_DIR$/api/love2d-api" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
