@@ -21,10 +21,10 @@ local obstacles = {}   -- Hindernisse
 local projectiles = {} -- Wurfgeschosse
 local particles = {}   -- Krümel/Effekte
 local clouds = {}      -- Deko-Wolken
-local fartGas = {}     -- Pups-Wolken (Neu für das Ende)
+local fartGas = {}     -- Pups-Wolken
 
 function love.load()
-    love.window.setTitle("Die gestohlene Flasche - Action Edition & Pups Finale")
+    love.window.setTitle("Die gestohlene Flasche - 67 Edition")
     love.window.setMode(800, 600)
 
     -- Deko-Wolken initialisieren
@@ -58,19 +58,16 @@ function love.update(dt)
         end
 
     elseif string.find(scene, "CHASE") then
-        -- Gemeinsame Logik für alle Verfolgungsjagden
         updateChase(dt)
 
         -- Szenenwechsel
         if scene == "CHASE_PARK" and timer > 8 then switchScene("CHASE_HEAVEN") end
         if scene == "CHASE_HEAVEN" and timer > 8 then switchScene("CHASE_HELL") end
-        -- HIER GEÄNDERT: Statt EATING kommt jetzt FINALE
         if scene == "CHASE_HELL" and timer > 8 then switchScene("FINALE") end
 
     elseif scene == "FINALE" then
         -- PHASE 1: Reset & Trinken
         if timer < 0.1 then
-            -- Positionierung: Blau links, Orange rechts
             boy1.x = 200; boy1.y = 400; boy1.dir = 1; boy1.hasBottle = true; boy1.jumpY = 0
             boy2.x = 500; boy2.y = 400; boy2.dir = -1; boy2.hasBottle = false; boy2.jumpY = 0
             boy1.state = "idle"
@@ -79,19 +76,21 @@ function love.update(dt)
 
         if timer > 1 and timer < 3 then
             boy1.state = "drink" -- Blau trinkt
-            -- Orange guckt verwirrt zu
         elseif timer >= 3 and timer < 4 then
-            boy1.state = "charge" -- Blau dreht sich um und "lädt auf"
-            boy1.dir = -1 -- Rücken zu Orange
+            boy1.state = "charge" -- Blau dreht sich um
+            boy1.dir = -1
         elseif timer >= 4 and timer < 7 then
-            boy1.state = "fart" -- FEUER FREI
-            spawnFart(boy1.x + 40, boy1.y - 30) -- Gas kommt hinten raus
+            boy1.state = "fart" -- Pupsen
+            spawnFart(boy1.x + 40, boy1.y - 30)
+            if timer > 4.5 then boy2.state = "faint" end -- Orange fällt um
 
-            -- Wenn das Gas Orange erreicht (ca bei 4.5s)
-            if timer > 4.5 then
-                boy2.state = "faint" -- Ohnmacht
-            end
-        elseif timer >= 8 then
+        elseif timer >= 7 and timer < 10 then
+            -- HIER PASSIERT DAS "67" MEME
+            boy1.state = "meme"
+            -- Orange liegt weiterhin ohnmächtig da
+            boy2.state = "faint"
+
+        elseif timer >= 10 then
             switchScene("OUTRO")
         end
 
@@ -102,19 +101,16 @@ function love.update(dt)
     end
 end
 
--- --- HILFSFUNKTIONEN FÜR JAGD ---
+-- --- HILFSFUNKTIONEN ---
 
 function updateChase(dt)
-    -- Geschwindigkeit und Scrollen
     local speed = 250
     if scene == "CHASE_HELL" then speed = 350 end
     cameraScroll = cameraScroll + speed * dt
 
-    -- 1. CHARAKTERE LAUFEN LASSEN
     boy1.state = "run"
     boy2.state = "run"
 
-    -- Positionen halten
     local targetX1 = 200
     local targetX2 = 600
 
@@ -129,7 +125,6 @@ function updateChase(dt)
     boy1.x = boy1.x + (targetX1 - boy1.x) * 2 * dt
     boy2.x = boy2.x + (targetX2 - boy2.x) * 2 * dt
 
-    -- 2. HINDERNISSE & WERFEN
     updateObstacles(dt, speed)
     updateThrowing(dt)
     updateProjectiles(dt)
@@ -205,7 +200,6 @@ function updateProjectiles(dt)
     end
 end
 
--- NEU: Fart Funktionen
 function spawnFart(x, y)
     for i=1, 3 do
         table.insert(fartGas, {
@@ -264,7 +258,7 @@ function love.draw()
         drawCharacter(boy2)
     end
 
-    -- Pups-Gas zeichnen
+    -- Pups-Gas
     for _, f in ipairs(fartGas) do
         love.graphics.setColor(0.2, 0.8, 0.1, 0.6)
         love.graphics.circle("fill", f.x, f.y, f.size)
@@ -298,7 +292,6 @@ function drawCharacter(c)
     local cx, cy = c.x, c.y + c.jumpY
     local bodyW, bodyH = 40, 60
 
-    -- Animations-Werte
     local legAngle = 0
     local armAngle = 0
 
@@ -310,7 +303,7 @@ function drawCharacter(c)
     elseif c.state == "hit" then
         armAngle = 3
     elseif c.state == "fart" then
-        cx = cx + love.math.random(-2, 2) -- Zittern
+        cx = cx + love.math.random(-2, 2)
     end
 
     love.graphics.push()
@@ -342,24 +335,35 @@ function drawCharacter(c)
     love.graphics.line(cx - 10, cy, lLegX - 10, lLegY)
     love.graphics.line(cx + 10, cy, cx + math.sin(-legAngle)*20 + 10, cy + math.cos(-legAngle)*30)
 
-    -- ARME (Logik für Pups-Finale integriert)
+    -- ARME (Logik für Pups-Finale & 67)
     local shoulderY = cy - bodyH + 10
 
     if c.state == "drink" then
-        -- Arm zum Mund
         love.graphics.line(cx - 15, shoulderY, cx + 5, cy - bodyH - 5)
         love.graphics.line(cx + 15, shoulderY, cx + 5, cy - bodyH - 5)
         drawBottle(cx, cy - bodyH - 10, 120)
+
     elseif c.state == "fart" then
-        -- Hände auf Knie
         love.graphics.line(cx - 20, shoulderY, cx - 20, cy - 20)
         love.graphics.line(cx + 20, shoulderY, cx + 20, cy - 20)
+
+    elseif c.state == "meme" then
+        -- DIE 67 BEWEGUNG: Arme vor dem Körper hoch und runter
+        local armWave = math.sin(gameTime * 25) * 20 -- Schnelle Bewegung
+        -- Beide Arme parallel nach vorne und hoch/runter
+        love.graphics.line(cx - 20, shoulderY, cx + 20, shoulderY + 20 + armWave)
+        love.graphics.line(cx + 20, shoulderY, cx + 20, shoulderY + 20 + armWave)
+
+        -- Optional: Er hüpft dabei leicht
+        if c == boy1 then love.graphics.translate(0, math.sin(gameTime*25)*2) end
+
     elseif c.state == "faint" then
-        -- Schlapp
         love.graphics.line(cx - 20, shoulderY, cx - 30, shoulderY - 20)
         love.graphics.line(cx + 20, shoulderY, cx + 30, shoulderY - 20)
+
     elseif c.state == "pickup" then
         love.graphics.line(cx, shoulderY, cx + 20*c.dir, cy)
+
     else
         -- Normales Rennen / Werfen
         local rArmAngle = armAngle
@@ -374,7 +378,7 @@ function drawCharacter(c)
         love.graphics.line(cx + 20, shoulderY, rArmX + 20, rArmY)
 
         if (c == boy1 and boy1.hasBottle) or (c == boy2 and not boy1.hasBottle) then
-            if c.state ~= "drink" then drawBottle(rArmX + 20, rArmY, armAngle) end
+            if c.state ~= "drink" and c.state ~= "meme" then drawBottle(rArmX + 20, rArmY, armAngle) end
         elseif c == boy1 and c.state == "run" and c.throwTimer > 2.8 then
             love.graphics.setColor(0.3, 0.3, 0.3); love.graphics.circle("fill", rArmX + 20, rArmY, 5)
         end
@@ -419,13 +423,24 @@ end
 
 function drawUI()
     love.graphics.setColor(1, 1, 1)
-    love.graphics.setFont(love.graphics.newFont(20))
+
     if scene == "INTRO" then
-        love.graphics.printf("DIE GESTOHLENE FLASCHE\n(Action Edition)", 0, 250, 800, "center")
-    elseif scene == "FINALE" and timer > 4 then
-        love.graphics.printf("*FETTER FURZ*", 0, 100, 800, "center")
+        love.graphics.setFont(love.graphics.newFont(20))
+        love.graphics.printf("DIE GESTOHLENE FLASCHE\n(67 Edition)", 0, 250, 800, "center")
+
+    elseif scene == "FINALE" then
+        if timer > 4 and timer < 7 then
+            love.graphics.setFont(love.graphics.newFont(20))
+            love.graphics.printf("*PUUUUUUPS*", 0, 100, 800, "center")
+        elseif boy1.state == "meme" then
+            -- GROSSES 67
+            love.graphics.setFont(love.graphics.newFont(60))
+            love.graphics.print("67", boy1.x - 20, boy1.y - 120)
+        end
+
     elseif scene == "OUTRO" then
-        love.graphics.printf("K.O. - Das Ende", 0, 250, 800, "center")
+        love.graphics.setFont(love.graphics.newFont(20))
+        love.graphics.printf("ENDE", 0, 250, 800, "center")
     end
 end
 
