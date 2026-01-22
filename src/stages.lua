@@ -27,6 +27,11 @@ function stages.update(dt)
         end
     elseif stages.stage == "MOON" then
         objects.updateMoon(dt)
+        if objects.rocket.y <= 430 then
+            stages.stage = "ROVER"
+        end
+    elseif stages.stage == "ROVER" then
+        objects.updateRover(dt)
     end
 end
 

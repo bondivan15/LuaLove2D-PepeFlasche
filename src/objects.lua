@@ -4,7 +4,10 @@ local objects = {}
 
 objects.car = { x = -150, y = 510, speed = 180 }
 objects.rocket = { x = 400, y = 430, vy = 0, engine = 0 }
+objects.rover = { x = 400, y = 510, speed = 60 }
+
 function objects.load() end
+
 function objects.updateDrive(dt, stages)
     local car = objects.car
     if car.x < 330 then
@@ -17,6 +20,7 @@ function objects.updateDrive(dt, stages)
         stages.timer = 0
     end
 end
+
 function objects.updateLaunch(dt, stages)
     local r = objects.rocket
     r.engine = math.min(r.engine + dt, 1)
@@ -34,6 +38,7 @@ function objects.updateLaunch(dt, stages)
         r.y = 800
     end
 end
+
 function objects.updateMoon(dt)
     local r = objects.rocket
     if r.y > 430 then
@@ -43,4 +48,9 @@ function objects.updateMoon(dt)
         end
     end
 end
+
+function objects.updateRover(dt)
+    objects.rover.x = objects.rover.x + objects.rover.speed * dt
+end
+
 return objects
