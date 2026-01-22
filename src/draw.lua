@@ -23,7 +23,6 @@ function draw.render()
             love.graphics.setColor(1,1,1,s.o)
             love.graphics.circle("fill", s.x, s.y, s.s)
         end
-        -- Рисуем серую поверхность и для Луны, и для Лунохода
         if stages.stage == "MOON" or stages.stage == "ROVER" then
             love.graphics.setColor(0.6,0.6,0.6)
             love.graphics.rectangle("fill", 0, 530, 800, 70)
@@ -46,7 +45,6 @@ function draw.render()
                 stages.stage == "SPACE" and 300 or objects.rocket.y)
     end
 
-    -- Рисуем Луноход
     if stages.stage == "ROVER" then
         drawRover(objects.rover)
     end
