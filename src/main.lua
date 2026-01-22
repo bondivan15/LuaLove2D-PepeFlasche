@@ -1,14 +1,16 @@
-local szene4 = require("erde")
+local stages = require("stages")
+local draw = require("draw")
 
 function love.load()
+    love.window.setTitle("Space Journey 2.0")
     love.window.setMode(800, 600)
-    szene4.load()
+    stages.load()
 end
 
 function love.update(dt)
-    szene4.update(dt)
+    stages.update(dt)
 end
 
 function love.draw()
-    szene4.draw()
+    draw.render()
 end
