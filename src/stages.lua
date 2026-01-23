@@ -19,7 +19,7 @@ function stages.update(dt)
     elseif stages.stage == "LAUNCH" then
         objects.updateLaunch(dt, stages)
     elseif stages.stage == "SPACE" then
-        stages.shake = 0
+        stages.shake = 1
         stars.update(dt)
         if stages.timer > 7 then
             stages.stage = "MOON"
